@@ -147,50 +147,50 @@ void loop() {
 	//Serial.print(potZone);
 	potZone /= 30;						// Adjust angle to zone 0 - 5;
 	
-		// Only clear and change LCD screen if zone changed
-		if (potZone != lastPotZone) {
-			noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
-			durationIndex = noteIndex + 1;		// noteDuractions array stored one index past notes array
-			lastPotZone = potZone;				// update zone change
+	// Only clear and change LCD screen if zone changed
+	if (potZone != lastPotZone) {
+		noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
+		durationIndex = noteIndex + 1;		// noteDuractions array stored one index past notes array
+		lastPotZone = potZone;				// update zone change
 
-			// Display potZone to lcd screen
+		// Display potZone to lcd screen
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print("Play Song: ");
+		lcd.setCursor(0, 1);
+
+		// Display tune associated with current zone
+		switch (potZone)
+		{
+		case 0:
+			lcd.print("Jurassic Park");
+			break;
+		case 1:
+			lcd.print("LoTR: The Shire");
+			break;
+		case 2:
 			lcd.clear();
 			lcd.setCursor(0, 0);
-			lcd.print("Play Song: ");
+			lcd.print("Play Song: How");
 			lcd.setCursor(0, 1);
-
-			// Display tune associated with current zone
-			switch (potZone)
-			{
-			case 0:
-				lcd.print("Jurassic Park");
-				break;
-			case 1:
-				lcd.print("LoTR: The Shire");
-				break;
-			case 2:
-				lcd.clear();
-				lcd.setCursor(0, 0);
-				lcd.print("Play Song: How");
-				lcd.setCursor(0, 1);
-				lcd.print("to Save a Life");
-				break;
-			case 3:
-				lcd.print("Custom Tune #1");
-				break;
-			case 4:
-				lcd.print("Custom Tune #2");
-				break;
-			case 5:
-				lcd.print("Custom Tune #3");
-				break;
-			default:
-				break;
-			}
-
-			// Load current melody
-			loadCurTrack();
+			lcd.print("to Save a Life");
+			break;
+		case 3:
+			lcd.print("Custom Tune #1");
+			break;
+		case 4:
+			lcd.print("Custom Tune #2");
+			break;
+		case 5:
+			lcd.print("Custom Tune #3");
+			break;
+		default:
+			break;
 		}
+
+		// Load current melody
+		loadCurTrack();
+	}
 
 	//Serial.print(", zone: ");
 	//Serial.print(potZone);
@@ -369,6 +369,9 @@ void checkRecordOnOff() {
 			}
 			// Save track to persistent memory on finish
 			else {
+				// Load recording as current melody
+				loadCurTrack();
+
 				CustomTrack newTrack{
 					potZone,	// track zone
 					0,			// array of note frequencies
@@ -381,8 +384,6 @@ void checkRecordOnOff() {
 					newTrack.noteDurs[i] = noteDurations[i];
 				}
 
-				// Load recording as current melody
-				loadCurTrack();
 
 				// Store custom track in memory location corresponding with potZone
 				EEPROM.put((potZone - 3) * sizeof(CustomTrack), newTrack);
