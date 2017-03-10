@@ -278,9 +278,6 @@ void loop() {
 						currNoteMillis = 0;		// reset note duration timer
 						isKeyDown = false;
 						curRecNote = 0;			// Exiting record node, no input note to preview
-
-						// Load recording as current melody
-						loadCurTrack();
 					}
 				}
 			}
@@ -383,6 +380,9 @@ void checkRecordOnOff() {
 					newTrack.notes[i] = notes[i];
 					newTrack.noteDurs[i] = noteDurations[i];
 				}
+
+				// Load recording as current melody
+				loadCurTrack();
 
 				// Store custom track in memory location corresponding with potZone
 				EEPROM.put((potZone - 3) * sizeof(CustomTrack), newTrack);
