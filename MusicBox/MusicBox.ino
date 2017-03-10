@@ -86,6 +86,7 @@ const int recordPin = 7;
 // Piezo speaker output pin
 const int soundPin = 8;
 
+// Frequency of note to preview during recording input
 int curRecNote = 0;
 
 // Play and Record light colors
@@ -96,6 +97,7 @@ int greenValue = 0;
 const int potPin = A0;
 int potVal;
 int potZone;
+int lastPotZone = 15;
 int noteIndex;
 int durationIndex;
 
@@ -179,7 +181,9 @@ void setup() {
 void loop() {
 	// While in record mode, play a preview of the note being recorded
 	if (curRecNote != 0) {
-		tone(soundPin, curRecNote);
+		tone(soundPin, curRecNote, 900);
+		Serial.print("Rec Note: ");
+		Serial.println(curRecNote);
 	}
 
 	// Read potentiometer to determine current track
@@ -189,50 +193,53 @@ void loop() {
 	//Serial.print("angle: ");
 	//Serial.print(potZone);
 	potZone /= 30;						// Adjust angle to zone 0 - 5;
-	noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
-	durationIndex = noteIndex + 1;		// noteDuractions array stored one index past notes array
+	
+		// Only clear and change LCD screen if zone changed
+		if (potZone != lastPotZone) {
+		//	Serial.println("changed zones");
+			noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
+			durationIndex = noteIndex + 1;		// noteDuractions array stored one index past notes array
+			lastPotZone = potZone;
 
-	// Display potZone to lcd screen
-	lcd.clear();
-	lcd.setCursor(0, 0);
-	lcd.print("Play Song: ");
-	lcd.setCursor(0, 1);
+			// Display potZone to lcd screen
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("Play Song: ");
+			lcd.setCursor(0, 1);
 
 
-	// Display tune associated with current zone
-	switch (potZone)
-	{
-	case 0:
-		lcd.print("Jurassic Park");
-		break;
-	case 1:
-		lcd.print("LoTR: The Shire");
-		break;
-	case 2:
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		lcd.print("Play Song: How");
-		lcd.setCursor(0, 1);
-		lcd.print("to Save a Life");
-		break;
-	case 3:
-		lcd.print("Custom Tune #1");
-		break;
-	case 4:
-		lcd.print("Custom Tune #2");
-		break;
-	case 5:
-		lcd.print("Custom Tune #3");
-		break;
-	default:
-		break;
-	}
+			// Display tune associated with current zone
+			switch (potZone)
+			{
+			case 0:
+				lcd.print("Jurassic Park");
+				break;
+			case 1:
+				lcd.print("LoTR: The Shire");
+				break;
+			case 2:
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("Play Song: How");
+				lcd.setCursor(0, 1);
+				lcd.print("to Save a Life");
+				break;
+			case 3:
+				lcd.print("Custom Tune #1");
+				break;
+			case 4:
+				lcd.print("Custom Tune #2");
+				break;
+			case 5:
+				lcd.print("Custom Tune #3");
+				break;
+			default:
+				break;
+			}
 
-	// Load current melody
-	for (int i = 0; i < MAX_NOTES; i++) {
-		notes[i] = melodies[noteIndex][i];
-		noteDurations[i] = melodies[durationIndex][i];
-	}
+			// Load current melody
+			loadCurTrack();
+		}
 
 	//Serial.print(", zone: ");
 	//Serial.print(potZone);
@@ -325,6 +332,9 @@ void loop() {
 						currNoteMillis = 0;		// reset note duration timer
 						isKeyDown = false;
 						curRecNote = 0;			// Exiting record node, no input note to preview
+
+						// Load current melody
+						loadCurTrack();
 					}
 				}
 			}
@@ -453,6 +463,14 @@ void clearTrack(int track) {
 	for (int i = 0; i < MAX_NOTES; i++) {
 		melodies[track][i] = 0;			// clear notes
 		melodies[track+1][i] = 0;		// clear durations
+	}
+}
+
+// Load current melody
+void loadCurTrack() {
+	for (int i = 0; i < MAX_NOTES; i++) {
+		notes[i] = melodies[noteIndex][i];
+		noteDurations[i] = melodies[durationIndex][i];
 	}
 }
 
