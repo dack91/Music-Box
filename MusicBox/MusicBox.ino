@@ -28,53 +28,6 @@ typedef struct {
 	int noteDurs[MAX_NOTES];	// array of durations for each stored frequency
 } CustomTrack;
 
-
-//namespace melody {
-//	typedef struct
-//	{
-//		int index;
-//		int tuneNotes[MAX_NOTES];
-//		int tuneDuration[MAX_NOTES];
-//
-//	} Tune;
-//
-//	typedef struct {
-//		Tune tracks[6];
-//
-//	} Melodies;
-//
-//	void setup() {
-//		Melodies melodies;
-//
-//		Tune jurassicPark;
-//		Tune lotr;
-//		Tune theFray;
-//		Tune custom1;
-//		Tune custom2;
-//		Tune custom3;
-//
-//		fillTune(jurassicPark, 1, int tune[MAX_NOTES] = { B, B, A, B, B, A, B, C, C, E, E, D, B, C, A, 175, D, B, C, F, B, E, D, D, C, C, 0, 0, 0, 0, 0, 0, 0 });
-//
-//	}
-//
-//	void fillTune(Tune t, int notesOrDur, int data[]) {
-//		for (int i = 0; i < sizeof(data) / sizeof(int); i++) {
-//			if (notesOrDur == 1 && i < MAX_NOTES) {
-//				t.tuneNotes[i] = data[i];
-//			}
-//			else if (notesOrDur == 2 && i < MAX_NOTES) {
-//				t.tuneDuration[i] = data[i];
-//			}
-//		}
-//	}
-//
-//	void fillMelodies(Melodies m, Tune tracks[]) {
-//		for (int i = 0; i < sizeof(tracks) / sizeof(Tune); i++) {
-//			m.tracks[i] = tracks[i];
-//		}
-//	}
-//}
-
 // Play and Record light analog pins
 const int redLEDPin = 9;
 const int greenLEDPin = 10;
@@ -196,17 +149,15 @@ void loop() {
 	
 		// Only clear and change LCD screen if zone changed
 		if (potZone != lastPotZone) {
-		//	Serial.println("changed zones");
 			noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
 			durationIndex = noteIndex + 1;		// noteDuractions array stored one index past notes array
-			lastPotZone = potZone;
+			lastPotZone = potZone;				// update zone change
 
 			// Display potZone to lcd screen
 			lcd.clear();
 			lcd.setCursor(0, 0);
 			lcd.print("Play Song: ");
 			lcd.setCursor(0, 1);
-
 
 			// Display tune associated with current zone
 			switch (potZone)
@@ -284,9 +235,6 @@ void loop() {
 			// If notes array is not full, record frequency of corresponding button press
 			if (recordNoteIndex < MAX_NOTES) {
 				int keyVal = analogRead(A1);
-				//if (keyVal >= 5) {
-				//	Serial.println(keyVal);
-				//}
 
 				// Read note based on input frequency from resistor ladder
 				if (keyVal >= 1020) {
@@ -318,8 +266,6 @@ void loop() {
 					recordNote(A);
 				}
 				else {
-					//noTone(soundPin);
-
 					// On key up
 					if (isKeyDown) {
 						// Store duration of key press for the note just released
@@ -333,7 +279,7 @@ void loop() {
 						isKeyDown = false;
 						curRecNote = 0;			// Exiting record node, no input note to preview
 
-						// Load current melody
+						// Load recording as current melody
 						loadCurTrack();
 					}
 				}
@@ -369,13 +315,17 @@ void loop() {
 		analogWrite(greenLEDPin, greenValue);
 
 		// Play melody
-		for (int i = 0; i <MAX_NOTES; i++) {
+		for (int i = 0; i < MAX_NOTES; i++) {
 			tone(soundPin, notes[i], noteDurations[i] * 50);	// play note with length
-
+			
 			delay(1.3 * 50 * noteDurations[i]);					// time between notes
 			noTone(soundPin);
 
-			//checkPlayOnOff();		TODO: enable play/pause functionality
+			// Check if play should be stopped
+			checkPlayOnOff();	
+			if (!playEnabled) {
+				break;
+			}
 		}
 		playEnabled = false;
 		greenValue = 0;			// reset play light color
@@ -400,8 +350,10 @@ void checkPlayOnOff() {
 
 		// If play button pressed, enable play
 		if (onOffPlaySwitchState != previousOnOffPlaySwitchState) {
+			Serial.println("button pressed");
 			if (onOffPlaySwitchState == HIGH) {
 				playEnabled = !playEnabled;
+				Serial.println("but2");
 			}
 		}
 	}
