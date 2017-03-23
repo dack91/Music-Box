@@ -147,6 +147,7 @@ void loop() {
 	//Serial.print(potZone);
 	potZone /= 30;						// Adjust angle to zone 0 - 5;
 	
+
 	// Only clear and change LCD screen if zone changed
 	if (potZone != lastPotZone) {
 		noteIndex = potZone * 2;			// Each zone has 2 indices, one each for notes and noteDurations arrays
@@ -192,8 +193,11 @@ void loop() {
 		loadCurTrack();
 	}
 
-	//Serial.print(", zone: ");
-	//Serial.print(potZone);
+	Serial.print("zone: ");
+	Serial.println(potZone);
+
+	//Serial.print("record enabled: ");
+	//Serial.println(recordEnabled);
 
 	//Serial.print(", noteI: ");
 	//Serial.print(noteIndex);
@@ -313,7 +317,7 @@ void loop() {
 
 		// Play melody
 		for (int i = 0; i < MAX_NOTES; i++) {
-			tone(soundPin, notes[i], noteDurations[i] * 50);	// play note with length
+			tone(soundPin, notes[i], noteDurations[i] * 50 * 1.1);	// play note with length
 			
 			delay(1.3 * 50 * noteDurations[i]);					// time between notes
 			noTone(soundPin);
@@ -347,10 +351,11 @@ void checkPlayOnOff() {
 
 		// If play button pressed, enable play
 		if (onOffPlaySwitchState != previousOnOffPlaySwitchState) {
-			Serial.println("button pressed");
+			Serial.println("PLAY PRESSED");
 			if (onOffPlaySwitchState == HIGH) {
 				playEnabled = !playEnabled;
-				Serial.println("but2");
+				Serial.print("play enabled? ");
+				Serial.println(playEnabled);
 			}
 		}
 	}
@@ -362,6 +367,7 @@ void checkRecordOnOff() {
 	// If record button pressed, enable recording
 	if (onOffRecordSwitchState != previousOnOffRecordSwitchState) {
 		if (onOffRecordSwitchState == HIGH) {
+			Serial.println("RECORD PRESSED");
 			// Clear track on recording start
 			if (!recordEnabled) {
 				//Serial.println("clear track");
@@ -390,6 +396,8 @@ void checkRecordOnOff() {
 			}
 
 			recordEnabled = !recordEnabled;		// toggle recording mode on/off	
+			Serial.print("record enabled? ");
+			Serial.println(recordEnabled);
 			recordNoteIndex = 0;				// reset note recording index
 		}
 	}
